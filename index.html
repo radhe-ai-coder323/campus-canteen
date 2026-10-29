@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Canteen</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{font-family:Inter,system-ui,sans-serif;overflow-x:hidden}
+.fb{background:linear-gradient(135deg,#fde68a,#f59e0b)}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .7s}
+.slide.on{opacity:1}
+.toast{animation:fi .3s}
+.bg-white{background:rgba(255,255,255,.55)!important;backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border:1px solid rgba(255,255,255,.6)!important;box-shadow:0 8px 32px rgba(120,80,20,.12)!important;transition:transform .2s}
+.bg-white:active{transform:scale(.99)}
+header{background:rgba(217,119,6,.65)!important;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,.25)}
+button{transition:transform .15s,background-color .2s}
+button:active{transform:scale(.96)}
+@keyframes fi{from{opacity:0;transform:translateY(-8px)}}
+</style>
+</head>
+<body class="text-slate-800 min-h-screen" style="background:linear-gradient(160deg,#fff7ed 0%,#fde68a 45%,#fcd34d 100%) fixed">
+
+<header class="bg-amber-600 text-white sticky top-0 z-40 shadow">
+  <div class="max-w-5xl mx-auto px-3 pt-2 flex items-center justify-between gap-2">
+    <div class="font-extrabold text-lg"><i class="fa-solid fa-utensils"></i> Campus Canteen</div>
+    <div class="flex items-center gap-2 text-xs">
+      <span id="who" class="bg-white/20 rounded-full px-2 py-1 max-w-[9rem] truncate">Guest</span>
+      <button id="authBtn" class="bg-white text-amber-700 font-semibold rounded-full px-3 py-1">Login</button>
+    </div>
+  </div>
+  <nav class="max-w-5xl mx-auto px-2 py-2 grid grid-cols-5 gap-1 text-xs">
+    <button class="nav rounded-lg py-1.5 hover:bg-white/20" data-nav="home" onclick="go('home')"><i class="fa-solid fa-house"></i><br>Home</button>
+    <button class="nav rounded-lg py-1.5 hover:bg-white/20" data-nav="menu" onclick="go('menu')"><i class="fa-solid fa-bowl-food"></i><br>Menu</button>
+    <button class="nav rounded-lg py-1.5 hover:bg-white/20 relative" data-nav="cart" onclick="go('cart')"><i class="fa-solid fa-cart-shopping"></i><br>My Cart<span id="badge" class="absolute top-0 right-1 bg-red-500 rounded-full px-1.5 text-[10px]">0</span></button>
+    <button class="nav rounded-lg py-1.5 hover:bg-white/20" data-nav="wallet" onclick="go('wallet')"><i class="fa-solid fa-wallet"></i><br>Wallet</button>
+    <button class="nav rounded-lg py-1.5 hover:bg-white/20" data-nav="profile" onclick="go('profile')"><i class="fa-solid fa-user"></i><br>Profile</button>
+  </nav>
+</header>
+
+<main class="max-w-5xl mx-auto px-3 py-4 pb-24">
+
+  <!-- HOME -->
+  <section id="p-home" class="page">
+    <div class="relative h-56 sm:h-80 rounded-2xl overflow-hidden shadow" id="carousel" onmouseenter="pause()" onmouseleave="play()" ontouchstart="pause()" ontouchend="play()">
+      <div id="slides"></div>
+      <button onclick="prev()" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/40 text-white w-9 h-9 rounded-full"><i class="fa-solid fa-chevron-left"></i></button>
+      <button onclick="next()" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/40 text-white w-9 h-9 rounded-full"><i class="fa-solid fa-chevron-right"></i></button>
+      <div id="dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-2"></div>
+    </div>
+    <div class="text-center mt-6">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-amber-700">Welcome to Campus Canteen</h1>
+      <p class="text-slate-600 mt-2 text-sm">Order snacks, meals and drinks, and pay from your campus wallet.</p>
+      <button onclick="go('menu')" class="mt-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-full px-6 py-2.5 shadow"><i class="fa-solid fa-utensils"></i> Explore Menu</button>
+    </div>
+    <div class="grid grid-cols-3 gap-3 mt-8 text-center text-sm">
+      <div class="bg-white rounded-2xl shadow p-3"><i class="fa-solid fa-bolt text-amber-500 text-xl"></i><p class="mt-1 font-semibold">Quick Order</p></div>
+      <div class="bg-white rounded-2xl shadow p-3"><i class="fa-solid fa-wallet text-amber-500 text-xl"></i><p class="mt-1 font-semibold">Campus Wallet</p></div>
+      <div class="bg-white rounded-2xl shadow p-3"><i class="fa-solid fa-clock-rotate-left text-amber-500 text-xl"></i><p class="mt-1 font-semibold">Order History</p></div>
+    </div>
+  </section>
+
+  <!-- MENU -->
+  <section id="p-menu" class="page hidden"><h1 class="text-xl font-extrabold text-amber-700">Food Menu</h1><div id="menu"></div></section>
+
+  <!-- CART -->
+  <section id="p-cart" class="page hidden"><h1 class="text-xl font-extrabold text-amber-700 mb-3">My Cart</h1><div id="cart"></div></section>
+
+  <!-- WALLET -->
+  <section id="p-wallet" class="page hidden"><h1 class="text-xl font-extrabold text-amber-700 mb-3">Wallet</h1><div id="wallet"></div></section>
+
+  <!-- PROFILE -->
+  <section id="p-profile" class="page hidden"><h1 class="text-xl font-extrabold text-amber-700 mb-3">Profile</h1><div id="profile"></div></section>
+
+  <!-- ABOUT -->
+  <section id="p-about" class="page hidden">
+    <h1 class="text-xl font-extrabold text-amber-700 mb-3">About Us</h1>
+    <div class="bg-white rounded-2xl shadow p-4 text-sm space-y-2">
+      <p><b>Project name:</b> Campus Canteen Management System</p>
+      <p><b>Purpose:</b> To demonstrate digital food ordering and basic canteen account management.</p>
+      <p>A college canteen serves students and teachers every day. This demo lets users browse food, add items to a cart, and pay from a prepaid wallet, with optional Udhari (credit) for the remaining amount.</p>
+      <p class="text-xs text-slate-500">This is a student project for local demonstration only. The wallet is simulated and no real money is involved.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="text-center text-xs text-slate-500 pb-6"><button onclick="go('about')" class="underline">About Us</button></footer>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 items-center justify-center p-4" style="display:none">
+  <div class="bg-white rounded-2xl p-5 w-full max-w-sm">
+    <div class="flex justify-between items-center">
+      <h3 class="font-bold text-lg">Are you a Student or Teacher?</h3>
+      <button onclick="closeLogin()" class="text-slate-400 text-2xl leading-none">&times;</button>
+    </div>
+    <div class="grid grid-cols-2 gap-2 my-3">
+      <button id="rStudent" onclick="setRole('Student')" class="rounded-lg py-2 font-semibold"><i class="fa-solid fa-user-graduate"></i> Student</button>
+      <button id="rTeacher" onclick="setRole('Teacher')" class="rounded-lg py-2 font-semibold"><i class="fa-solid fa-chalkboard-user"></i> Teacher</button>
+    </div>
+    <label class="text-xs font-semibold">Full Name</label>
+    <input id="fName" class="w-full border rounded-lg px-3 py-2 mb-2 text-sm" placeholder="Your full name (alphabets only)" oninput="this.value=this.value.replace(/[^A-Za-z ]/g,'')">
+    <label id="lbl2" class="text-xs font-semibold">Roll Number</label>
+    <input id="fId" class="w-full border rounded-lg px-3 py-2 mb-2 text-sm" oninput="filterId()" placeholder="Roll No: 240790800 to 240790900">
+    <label id="lbl3" class="text-xs font-semibold">Branch</label>
+    <input id="fEx" class="w-full border rounded-lg px-3 py-2 mb-3 text-sm" style="display:none">
+    <select id="fBranch" class="w-full border rounded-lg px-3 py-2 mb-3 text-sm bg-white">
+      <option value="">-- Select Branch --</option>
+      <option>Computer Science</option>
+      <option>Electrical</option>
+      <option>Electronics</option>
+      <option>Mechanical</option>
+      <option>Civil</option>
+      <option>Automobile</option>
+      <option>Chemical</option>
+    </select>
+    <button onclick="submitLogin()" class="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-lg py-2 font-bold">Continue</button>
+    <p class="text-[11px] text-slate-500 mt-2 text-center">Demo login only. Not a secure authentication system.</p>
+  </div>
+</div>
+
+<div id="toasts" class="fixed bottom-4 inset-x-4 z-[60] flex flex-col items-center pointer-events-none"></div>
+
+<script>
+/* ---------- MENU DATA (edit names, prices, images here) ---------- */
+const MENU=[
+{id:'fries',n:'Finger Chips (French Fries)',c:'Snacks',p:30,i:'https://i.postimg.cc/x8G1mgZd/Frenchfries.png',e:'🍟'},
+{id:'pakora',n:'Bread Pakora',c:'Snacks',p:30,i:'https://i.postimg.cc/fRyMWwMM/breadpakora.png',e:'🥪'},
+{id:'samosa',n:'Samosa',c:'Snacks',p:20,i:'https://i.postimg.cc/WzfTgK7f/1000023791.png',e:'🥟'},
+{id:'maggi',n:'Masala Maggi',c:'Snacks',p:50,i:'https://i.postimg.cc/QCYZFdGN/1000024178.png',e:'🍜'},
+{id:'limca',n:'Limca',c:'Cold Drinks',p:40,i:'https://i.postimg.cc/6qn1X66x/limca.png',e:'🥤'},
+{id:'dew',n:'Mountain Dew',c:'Cold Drinks',p:40,i:'https://i.postimg.cc/JzJSLqn7/dew.png',e:'🥤'},
+{id:'coke',n:'Coca-Cola',c:'Cold Drinks',p:40,i:'https://images.unsplash.com/photo-1554866585-cd94860890b7?w=600',e:'🥤'},
+{id:'frooti',n:'Frooti',c:'Cold Drinks',p:30,i:'https://i.postimg.cc/XYkS5Lbp/frooti.png',e:'🧃'},
+{id:'dal',n:'Dal Chawal',c:'Lunch Meals',p:80,i:'https://i.postimg.cc/mZCdhDRB/dalchawal.png',e:'🍛'},
+{id:'roti',n:'Roti',c:'Lunch Meals',p:15,i:'https://i.postimg.cc/CLDjPV3Y/pexels-miltonphotography-35066812.jpg',e:'🫓'},
+{id:'paneer',n:'Paneer Butter Masala',c:'Lunch Meals',p:120,i:'https://i.postimg.cc/tC5GZDyX/1793010126466.png',e:'🥘'},
+{id:'lassi',n:'Buttermilk (Lassi)',c:'Lunch Meals',p:25,i:'https://i.postimg.cc/6pgY70JF/pexels-galiiya-20689315.jpg',e:'🥛'},
+{id:'tea',n:'Hot Masala Tea',c:'Tea and Coffee',p:15,i:'https://i.postimg.cc/fLLND9pP/pexels-thel0stkidd-2149128959-31141291.jpg',e:'☕'},
+{id:'coffee',n:'Cold Coffee',c:'Tea and Coffee',p:60,i:'https://i.postimg.cc/2SD3m0Gm/pexels-alejandro-aznar-155337093-28525199.jpg',e:'🧋'}
+];
+const CATS=['Snacks','Cold Drinks','Lunch Meals','Tea and Coffee'];
+
+/* ---------- HERO SLIDES (3 slides: 2 uploaded photos + 1 Unsplash) ---------- */
+const SLIDES=[
+{src:'https://i.postimg.cc/MpMt2K95/college-image1.png',t:'Our Campus Heritage',s:'Campus life and tradition'},
+{src:'https://i.postimg.cc/QCz50cZF/college-image2.png',t:'Ch. Bansi Lal Government Polytechnic',s:'Students gathering at our campus'},
+{src:'https://i.postimg.cc/FRWJH0R0/canteenimage.jpg',t:'Our Canteen',s:'Fresh food, fast service'}
+];
+
+/* ---------- STORAGE ---------- */
+const LS={
+  get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Storage is full or blocked','err')}}
+};
+let users=LS.get('cc_users',{}); if(typeof users!=='object'||Array.isArray(users))users={};
+let session=LS.get('cc_session',null);
+let cart=LS.get('cc_cart',[]); if(!Array.isArray(cart))cart=[];
+const me=()=>session&&users[session]?users[session]:null;
+const saveUsers=()=>LS.set('cc_users',users);
+const saveCart=()=>{LS.set('cc_cart',cart);badge()};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const total=()=>cart.reduce((a,c)=>{const m=MENU.find(x=>x.id===c.id);return a+(m?m.p*c.qty:0)},0);
+
+/* ---------- TOAST ---------- */
+function toast(m,t='info'){
+  const d=document.createElement('div');
+  const col={ok:'bg-emerald-600',err:'bg-red-600',info:'bg-slate-700'}[t]||'bg-slate-700';
+  d.className=`toast ${col} text-white text-sm rounded-xl px-4 py-2 shadow-lg mb-2 max-w-sm`;
+  d.textContent=m;
+  document.getElementById('toasts').appendChild(d);
+  setTimeout(()=>d.remove(),2800);
+}
+
+/* ---------- NAVIGATION ---------- */
+let curPage='home';
+function go(p){
+  if(!document.getElementById('p-'+p))p='home';
+  curPage=p;
+  document.querySelectorAll('.page').forEach(s=>s.classList.toggle('hidden',s.id!=='p-'+p));
+  document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('bg-white/25',b.dataset.nav===p));
+  if(p==='menu')renderMenu();
+  if(p==='cart')renderCart();
+  if(p==='wallet')renderWallet();
+  if(p==='profile')renderProfile();
+  history.replaceState(null,'','#'+p);
+  window.scrollTo({top:0});
+}
+const guestMsg=p=>`<div class="bg-white rounded-2xl shadow p-6 text-center"><i class="fa-solid fa-lock text-4xl text-amber-500"></i><p class="mt-3">Please login to view your ${p}.</p><button onclick="openLogin()" class="mt-3 bg-amber-500 text-white rounded-lg px-4 py-2">Login</button></div>`;
+
+function header(){
+  const u=me();
+  document.getElementById('who').innerHTML=u?`<i class="fa-solid fa-user"></i> ${esc(u.name)} · ${u.role}`:'Guest';
+  const b=document.getElementById('authBtn');
+  b.textContent=u?'Logout':'Login';
+  b.onclick=u?logout:openLogin;
+}
+function badge(){document.getElementById('badge').textContent=cart.reduce((a,c)=>a+c.qty,0)}
+
+/* ---------- CAROUSEL ---------- */
+let si=0,timer=null,paused=false;
+function buildCarousel(){
+  document.getElementById('slides').innerHTML=SLIDES.map((s,k)=>`
+    <div class="slide fb ${k?'':'on'}">
+      <img src="${s.src}" alt="${esc(s.t)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<div class=&quot;absolute inset-0 flex items-center justify-center text-center text-white text-xs p-4 bg-black/30&quot;>Photo nahi mili. Image file ko index.html ke same folder mein rakhein.</div>')">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+      <div class="absolute bottom-10 left-4 right-14 text-white">
+        <h2 class="text-lg sm:text-2xl font-bold">${esc(s.t)}</h2>
+        <p class="text-xs sm:text-sm">${esc(s.s)}</p>
+      </div>
+    </div>`).join('');
+  document.getElementById('dots').innerHTML=SLIDES.map((_,k)=>`<button onclick="show(${k})" class="dot w-2.5 h-2.5 rounded-full bg-white/50" aria-label="Slide ${k+1}"></button>`).join('');
+  show(0); play();
+}
+function show(k){
+  si=(k+SLIDES.length)%SLIDES.length;
+  document.querySelectorAll('.slide').forEach((s,i)=>s.classList.toggle('on',i===si));
+  document.querySelectorAll('.dot').forEach((d,i)=>d.className=`dot w-2.5 h-2.5 rounded-full ${i===si?'bg-white':'bg-white/50'}`);
+}
+const next=()=>show(si+1), prev=()=>show(si-1);
+function play(){paused=false;clearInterval(timer);timer=setInterval(()=>{if(!paused)next()},4000)}
+function pause(){paused=true}
+
+/* ---------- MENU & CART ---------- */
+function renderMenu(){
+  document.getElementById('menu').innerHTML=CATS.map(c=>`
+    <h2 class="text-lg font-bold text-amber-700 mt-5 mb-2">${c}</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    ${MENU.filter(m=>m.c===c).map(m=>`
+      <div class="bg-white rounded-2xl shadow overflow-hidden flex flex-col">
+        <div class="h-28 bg-amber-100"><img src="${m.i}" alt="${esc(m.n)}" class="w-full h-full object-cover" onerror="fbImg(this,'${m.e}')"></div>
+        <div class="p-2 flex-1 flex flex-col">
+          <h3 class="font-semibold text-sm leading-tight">${m.n}</h3>
+          <p class="text-amber-700 font-bold mt-1">₹${m.p}</p>
+          <button onclick="addToCart('${m.id}')" class="mt-2 bg-amber-500 hover:bg-amber-600 text-white text-sm rounded-lg py-1.5"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>`).join('')}
+    </div>`).join('');
+}
+function fbImg(img,emoji){img.parentNode.innerHTML=`<div class="w-full h-full flex items-center justify-center text-5xl fb">${emoji}</div>`}
+
+let pendingId=null;
+function addToCart(id){
+  if(!me()){pendingId=id;openLogin();toast('Please login to add items','info');return}
+  const it=cart.find(c=>c.id===id);
+  if(it)it.qty++; else cart.push({id,qty:1});
+  saveCart();
+  toast('Added to cart','ok');
+}
+function chg(id,d){
+  const it=cart.find(c=>c.id===id); if(!it)return;
+  it.qty+=d; if(it.qty<=0)cart=cart.filter(c=>c.id!==id);
+  saveCart(); renderCart();
+}
+function rm(id){cart=cart.filter(c=>c.id!==id);saveCart();renderCart();toast('Item removed','info')}
+
+function renderCart(){
+  const el=document.getElementById('cart');
+  if(!cart.length){
+    el.innerHTML=`<div class="bg-white rounded-2xl shadow p-6 text-center"><i class="fa-solid fa-cart-shopping text-4xl text-amber-400"></i><p class="mt-3">Your cart is empty.</p><button onclick="go('menu')" class="mt-3 bg-amber-500 text-white rounded-lg px-4 py-2">Browse Menu</button></div>`;
+    return;
+  }
+  const t=total(), u=me();
+  let note='';
+  if(u&&t>u.wallet)note=`<p class="text-sm text-red-600 mt-2">Wallet balance ₹${u.wallet}. Remaining ₹${t-u.wallet} would go on Udhari.</p>`;
+  if(!u)note=`<p class="text-sm text-slate-600 mt-2">Login is required at checkout.</p>`;
+  el.innerHTML=`
+    <div class="space-y-2">${cart.map(c=>{const m=MENU.find(x=>x.id===c.id);return `
+      <div class="bg-white rounded-xl p-3 shadow flex items-center gap-3">
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm truncate">${m.n}</p>
+          <p class="text-xs text-slate-500">₹${m.p} each · Line total ₹${m.p*c.qty}</p>
+        </div>
+        <button onclick="chg('${c.id}',-1)" class="w-7 h-7 rounded-full bg-slate-200 font-bold">−</button>
+        <span class="w-6 text-center font-bold">${c.qty}</span>
+        <button onclick="chg('${c.id}',1)" class="w-7 h-7 rounded-full bg-amber-500 text-white font-bold">+</button>
+        <button onclick="rm('${c.id}')" class="text-red-500 ml-1" aria-label="Remove"><i class="fa-solid fa-trash"></i></button>
+      </div>`}).join('')}
+    </div>
+    <div class="bg-white rounded-2xl shadow p-4 mt-4">
+      <div class="flex justify-between font-extrabold text-lg"><span>Total</span><span>₹${t}</span></div>
+      ${note}
+      <button id="checkoutBtn" onclick="placeOrder()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg py-2.5"><i class="fa-solid fa-circle-check"></i> Place Order</button>
+    </div>`;
+}
+
+/* ---------- ORDERS (duplicate-safe) ---------- */
+let orderBusy=false;
+function placeOrder(){
+  if(orderBusy)return;
+  const u=me();
+  if(!u){toast('Please login before checkout','err');openLogin();return}
+  if(!cart.length){toast('Your cart is empty','err');return}
+  orderBusy=true;
+  try{
+    const t=total();
+    let wp=t, ud=0, method='Wallet';
+    if(u.wallet<t){
+      wp=u.wallet; ud=t-wp;
+      const ok=confirm(`Wallet balance ₹${wp+0}. Remaining ₹${ud} is needed.\n\nOK = pay ₹${wp} from wallet and put ₹${ud} on Udhari.\nCancel = order cancelled, no balance changes.`);
+      if(!ok){toast('Order cancelled. No balance changed.','info');return}
+      method='Wallet + Udhari';
+    }
+    let id;
+    do{id='CC'+Date.now().toString(36).toUpperCase()+Math.floor(Math.random()*900+100)}while(u.orders.some(o=>o.id===id));
+    u.wallet-=wp; u.dues+=ud; u.expenses+=t;
+    u.orders.unshift({
+      id,date:new Date().toLocaleString('en-IN'),
+      items:cart.map(c=>{const m=MENU.find(x=>x.id===c.id);return `${m.n} x${c.qty}`}).join(', '),
+      method,wp,ud,amt:t,status:'Preparing Food'
+    });
+    saveUsers();
+    cart=[]; saveCart();
+    toast(`Order ${id} placed!`,'ok');
+    go('profile');
+  }finally{orderBusy=false}
+}
+
+/* ---------- WALLET ---------- */
+const card=(title,val,cls)=>`<div class="bg-white rounded-2xl shadow p-4 border-l-4 ${cls}"><p class="text-xs text-slate-500">${title}</p><p class="text-2xl font-extrabold mt-1">₹${val}</p></div>`;
+function renderWallet(){
+  const u=me();
+  const el=document.getElementById('wallet');
+  if(!u){el.innerHTML=guestMsg('wallet');return}
+  el.innerHTML=`
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      ${card('Prepaid Balance',u.wallet,'border-emerald-500 text-emerald-600')}
+      ${card('Credit Dues (Udhari)',u.dues,'border-red-500 text-red-600')}
+      ${card('Total Expenses',u.expenses,'border-amber-500 text-amber-700')}
+    </div>
+    <div class="bg-white rounded-2xl shadow p-4 mt-4">
+      <h3 class="font-bold">Add Funds <span class="text-xs font-normal text-slate-500">(simulated)</span></h3>
+      <p class="text-xs text-slate-500 mb-2">New wallet starts at ₹0. Manually add funds below. Demo only, no real money is transferred.</p>
+      <div class="flex flex-wrap gap-2 mb-2">${[100,200,500,1000].map(a=>`<button onclick="document.getElementById('addAmt').value=${a}" class="border border-emerald-500 text-emerald-700 rounded-full px-3 py-1 text-xs">+₹${a}</button>`).join('')}</div>
+      <div class="flex gap-2"><input id="addAmt" type="number" min="1" placeholder="Amount ₹" class="flex-1 min-w-0 border rounded-lg px-3 py-2 text-sm"><button onclick="addFunds()" class="bg-emerald-600 text-white rounded-lg px-4 text-sm">Add</button></div>
+    </div>
+    <div class="bg-white rounded-2xl shadow p-4 mt-4">
+      <h3 class="font-bold">Pay Credit Dues</h3>
+      <p class="text-xs text-slate-500 mb-2">Paid from your prepaid wallet. Outstanding dues: ₹${u.dues}.</p>
+      <div class="flex gap-2"><input id="dueAmt" type="number" min="1" placeholder="Amount ₹" class="flex-1 min-w-0 border rounded-lg px-3 py-2 text-sm"><button onclick="payDues()" class="bg-red-500 text-white rounded-lg px-4 text-sm">Pay</button></div>
+      <p id="dueMsg" class="text-sm mt-2 text-slate-600"></p>
+    </div>`;
+}
+function addFunds(){
+  const u=me(); if(!u)return;
+  const a=Math.floor(+document.getElementById('addAmt').value);
+  if(!(a>0)){toast('Enter a valid amount','err');return}
+  if(!confirm(`Confirm simulated funding of ₹${a}? (Demo only, no real money)`))return;
+  u.wallet+=a; saveUsers();
+  toast(`₹${a} added (simulated)`,'ok');
+  renderWallet();
+}
+function payDues(){
+  const u=me(); if(!u)return;
+  const msg=document.getElementById('dueMsg');
+  if(u.dues<=0){msg.textContent='No credit dues. Nothing to pay.';toast('No credit dues to pay','info');return}
+  const a=Math.floor(+document.getElementById('dueAmt').value);
+  if(!(a>0)){toast('Enter a valid amount','err');return}
+  if(a>u.dues){toast(`Cannot pay more than dues of ₹${u.dues}`,'err');return}
+  if(a>u.wallet){toast(`Insufficient wallet balance (₹${u.wallet})`,'err');return}
+  if(!confirm(`Pay ₹${a} towards Udhari from your wallet?`))return;
+  u.wallet-=a; u.dues-=a; saveUsers();
+  toast('Credit dues paid','ok');
+  renderWallet();
+}
+
+/* ---------- PROFILE ---------- */
+function renderProfile(){
+  const u=me(), el=document.getElementById('profile');
+  if(!u){el.innerHTML=guestMsg('profile');return}
+  const det=u.role==='Student'?`Roll No: ${esc(u.id)} · Branch: ${esc(u.extra)}`:`Employee ID: ${esc(u.id)} · Department: ${esc(u.extra)}`;
+  el.innerHTML=`
+    <div class="bg-white rounded-2xl shadow p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-full bg-amber-500 text-white flex items-center justify-center text-2xl"><i class="fa-solid fa-user"></i></div>
+        <div class="min-w-0"><h2 class="font-bold text-lg truncate">${esc(u.name)}</h2><p class="text-sm text-amber-700">${u.role}</p><p class="text-xs text-slate-500">${det}</p></div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mt-4 text-center text-sm">
+        <div class="bg-emerald-50 rounded-lg p-2"><p class="text-xs text-slate-500">Wallet</p><b>₹${u.wallet}</b></div>
+        <div class="bg-red-50 rounded-lg p-2"><p class="text-xs text-slate-500">Udhari</p><b>₹${u.dues}</b></div>
+        <div class="bg-amber-50 rounded-lg p-2"><p class="text-xs text-slate-500">Expenses</p><b>₹${u.expenses}</b></div>
+      </div>
+      <button onclick="logout()" class="mt-4 w-full bg-slate-800 text-white rounded-lg py-2"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </div>
+    <h3 class="font-bold mt-5 mb-2">Order History</h3>
+    ${u.orders.length?u.orders.map(o=>`
+      <div class="bg-white rounded-xl shadow p-3 mb-2 text-sm">
+        <div class="flex justify-between gap-2"><b class="font-mono text-xs">${o.id}</b><span class="bg-amber-100 text-amber-800 rounded px-2 text-xs">${o.status}</span></div>
+        <p class="text-xs text-slate-500">${o.date}</p>
+        <p class="mt-1">${esc(o.items)}</p>
+        <div class="flex justify-between mt-1 text-xs"><span>${o.method}${o.ud?` (Wallet ₹${o.wp} + Udhari ₹${o.ud})`:''}</span><b>₹${o.amt}</b></div>
+      </div>`).join(''):'<p class="text-slate-500 text-center py-6 bg-white rounded-2xl">No orders yet.</p>'}`;
+}
+function logout(){
+  session=null; LS.set('cc_session',null);
+  header(); toast('Logged out','info');
+  go(curPage==='profile'||curPage==='wallet'||curPage==='cart'?curPage:curPage);
+}
+
+/* ---------- LOGIN / REGISTRATION ---------- */
+let role='Student', loginBusy=false;
+function openLogin(){document.getElementById('loginModal').style.display='flex';setRole(role)}
+function closeLogin(){document.getElementById('loginModal').style.display='none';pendingId=null}
+function setRole(r){
+  role=r;
+  const on='bg-amber-500 text-white', off='bg-slate-100 text-slate-700';
+  document.getElementById('rStudent').className=`rounded-lg py-2 font-semibold ${r==='Student'?on:off}`;
+  document.getElementById('rTeacher').className=`rounded-lg py-2 font-semibold ${r==='Teacher'?on:off}`;
+  document.getElementById('lbl2').textContent=r==='Student'?'Roll Number':'Employee ID';
+  document.getElementById('lbl3').textContent=r==='Student'?'Branch':'Department';
+  document.getElementById('fBranch').style.display=r==='Student'?'block':'none';
+  document.getElementById('fEx').style.display=r==='Student'?'none':'block';
+  filterId();
+}
+function filterId(){
+  const el=document.getElementById('fId');
+  if(role==='Student')el.value=el.value.replace(/\D/g,'');
+  el.inputMode=role==='Student'?'numeric':'text';
+}
+function submitLogin(){
+  if(loginBusy)return;
+  loginBusy=true;
+  try{
+    const name=document.getElementById('fName').value.trim();
+    const idv=document.getElementById('fId').value.trim();
+    const ex=role==='Student'?document.getElementById('fBranch').value:document.getElementById('fEx').value.trim();
+    if(!name){toast('Full name required hai','err');return}
+    if(!/^[A-Za-z ]+$/.test(name)){toast('Name me sirf alphabets allowed hain','err');return}
+    if(role==='Student'){
+      if(!/^\d+$/.test(idv)){toast('Roll number sirf numbers mein hona chahiye','err');return}
+      const rn=Number(idv);
+      if(rn<240790800||rn>240790900){toast('Roll number 240790800 se 240790900 ke beech hona chahiye','err');return}
+      if(!ex){toast('Branch select karein','err');return}
+    }else if(!idv||!ex){toast('Employee ID aur Department required hain','err');return}
+    const key=role+':'+idv.toLowerCase();
+    if(!users[key]){
+      users[key]={role,name,id:idv,extra:ex,wallet:0,dues:0,expenses:0,orders:[]};
+      toast('Account created. Wallet is ₹0, add funds manually.','ok');
+    }
+    session=key; LS.set('cc_session',session); saveUsers();
+    closeLogin();
+    toast(`Welcome, ${users[key].name} (${role})`,'ok');
+    header();
+    if(pendingId){const pid=pendingId;pendingId=null;addToCart(pid)}
+    go(curPage);
+  }finally{loginBusy=false}
+}
+
+/* ---------- INIT ---------- */
+buildCarousel();
+header();
+badge();
+go((location.hash||'#home').slice(1));
+</script>
+</body>
+</html>
